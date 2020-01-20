@@ -19,6 +19,8 @@ AMI_ID="$(aws ec2 describe-images --owners amazon --filters 'Name=name,Values=am
 
 aws ec2 run-instances --image-id $AMI_ID --count 3 --instance-type t2.micro --key-name MyKeyPair --security-group-ids $SG_ID --subnet-id $SUBNET_ID
 
+aws ec2 describe-instances --filter "Name=vpc-id,Values=$DEFAULTVPCID" --query "Reservations[*].Instances[*].InstanceId" --output json
+
 
 aws ec2 describe-vpcs --filters "Name=tag:Name,Values=myhostname"
 aws ec2 describe-vpcs --vpc-ids vpc-06e4ab6c6cEXAMPLE
