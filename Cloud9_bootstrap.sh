@@ -11,4 +11,8 @@ aws ec2 describe-vpcs --vpc-ids vpc-06e4ab6c6cEXAMPLE
 
 aws ec2 run-instances --image-id ami-xxxxxxxx --count 1 --instance-type t2.micro --key-name MyKeyPair --security-group-ids sg-903004f8 --subnet-id subnet-6e7f829e
 
-
+DEFAULTVPCID="$(aws ec2 describe-vpcs \
+    --filter "Name=isDefault, Values=true" \
+    --query "Vpcs[0].VpcId" --output text)"
+    
+Check this link : http://okigiveup.net/discovering-aws-with-cli-part-1-basics/
