@@ -16,3 +16,12 @@ DEFAULTVPCID="$(aws ec2 describe-vpcs \
     --query "Vpcs[0].VpcId" --output text)"
     
 Check this link : http://okigiveup.net/discovering-aws-with-cli-part-1-basics/
+
+
+
+DEFAULTVPCID="$(aws ec2 describe-vpcs --filter "Name=isDefault, Values=true" --query "Vpcs[0].VpcId" --output text)"
+
+SUBNETID="$(aws ec2 describe-subnets --filter "Name=vpc-id,Values=$DEFAULTVPCID" --query "Subnets[0].SubnetId" --output text)"
+
+aws ec2 describe-security-groups --filter "Name=vpc-id,Values=$DEFAULTVPCID" "Name=group-name,Values=default" --query "SecurityGroups[0].GroupId" --output text
+
