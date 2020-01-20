@@ -1,0 +1,39 @@
+pip install c7n
+
+custodian validate custodian.yml
+
+custodian run --dryrun -s out custodian.yml 
+
+
+custodian run --output-dir=. custodian.yml
+
+$ custodian run -s <output_directory> --metrics aws <policyfile>.yml
+custodian run -s . --metrics aws custodian.yml
+
+custodian run --dryrun -s out policy.yml --region=us-west-2
+
+I got the error "The role defined for the function cannot be assumed by Lambda" because i had not updated the roles "Trust Relationship" config file. I didn't encounter the timeout issues as in the linked answer in the comments.
+
+The comments in the above answers pointed out that you need to add the following.
+
+Go to 'IAM > Roles > YourRoleName'
+(Note: if your role isn't listed, then you need to create it.)
+Select the 'Trust Relationships' tab
+Select 'Edit Trust Relationship'
+Mine ended up like the below.
+
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      <your other rules>
+    },
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "lambda.amazonaws.com"
+      },
+      "Action": "sts:AssumeRole"
+    }
+  ]
+}
