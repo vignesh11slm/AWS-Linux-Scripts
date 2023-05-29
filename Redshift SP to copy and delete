@@ -1,0 +1,35 @@
+------- To copy files from one folder to another ----- 
+CREATE OR REPLACE PROCEDURE copy_files_within_s3(source_bucket_name VARCHAR, source_folder_path VARCHAR, destination_bucket_name VARCHAR, destination_folder_path VARCHAR)
+AS $$
+DECLARE
+  source_prefix VARCHAR := 's3://' || source_bucket_name || '/' || source_folder_path || '/';
+  destination_prefix VARCHAR := 's3://' || destination_bucket_name || '/' || destination_folder_path || '/';
+  source_objects CURSOR FOR SELECT s3_uri FROM svv_s3objects WHERE s3_uri LIKE source_prefix || '%';
+  source_object RECORD;
+  source_key VARCHAR;
+  destination_key VARCHAR;
+BEGIN
+  FOR source_object IN source_objects LOOP
+    source_key := SUBSTRING(source_object.s3_uri, LENGTH(source_prefix) + 1);
+    destination_key := destination_prefix || source_key;
+    PERFORM s3_copy_object(source_object.s3_uri, destination_key);
+  END LOOP;
+END;
+$$ LANGUAGE plpgsql;
+
+
+
+------- To delete all the files in the folder
+CREATE OR REPLACE PROCEDURE delete_objects_in_folder_from_s3(folder_path VARCHAR)
+AS $$
+DECLARE
+  s3_bucket_name VARCHAR := 'your-bucket-name'; -- Replace with your S3 bucket name
+  s3_objects CURSOR FOR SELECT s3_uri FROM svv_s3objects WHERE s3_uri LIKE 's3://' || s3_bucket_name || '/' || folder_path || '/%';
+  s3_object RECORD;
+BEGIN
+  FOR s3_object IN s3_objects LOOP
+    PERFORM s3_delete_object(s3_object.s3_uri);
+  END LOOP;
+END;
+$$ LANGUAGE plpgsql;
+
