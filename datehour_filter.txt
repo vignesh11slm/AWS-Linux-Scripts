@@ -25,3 +25,20 @@ WHERE TO_DATE(datehour, 'YYYYMMDDHH24') BETWEEN current_date - interval '2 weeks
 This query filters the `datehour` column within the range from the current date minus two weeks to the current date minus one day.
 
 Replace `your_table` with the actual name of your table containing the `datehour` column. Running these queries will return the rows where the `datehour` value falls within the specified date ranges.
+
+
+To filter the `datehour` column for the current month in Redshift, you can utilize the `TO_DATE` function and date functions available in Redshift. Here's how you can achieve this:
+
+Filter for Current Month:
+```sql
+SELECT *
+FROM your_table
+WHERE DATE_TRUNC('month', TO_DATE(datehour, 'YYYYMMDDHH24')) = DATE_TRUNC('month', GETDATE());
+```
+This query truncates the `datehour` column to the month level using the `DATE_TRUNC` function, and compares it with the truncated current month obtained from `GETDATE()`.
+
+Replace `your_table` with the actual name of your table containing the `datehour` column. Running this query will return the rows where the `datehour` value falls within the current month.
+
+Note: The `GETDATE()` function is used to obtain the current date and time in Redshift. If you need to use the current date only (without considering the time), you can use `CURRENT_DATE` instead of `GETDATE()`.
+
+Make sure to adjust the time zone settings if necessary to match your desired time zone.
