@@ -1,0 +1,27 @@
+To filter a column named `datehour` in Redshift based on specific date ranges, you can use the `TO_DATE` function along with the `BETWEEN` operator. Here's how you can filter for yesterday, the last week, and the last two weeks:
+
+1. Filter for Yesterday:
+```sql
+SELECT *
+FROM your_table
+WHERE TO_DATE(datehour, 'YYYYMMDDHH24') = current_date - interval '1 day';
+```
+This query compares the `datehour` column after converting it to a date format (YYYYMMDDHH24) with the current date minus one day.
+
+2. Filter for Last Week:
+```sql
+SELECT *
+FROM your_table
+WHERE TO_DATE(datehour, 'YYYYMMDDHH24') BETWEEN current_date - interval '1 week' AND current_date - interval '1 day';
+```
+This query uses the `BETWEEN` operator to filter the `datehour` column within the range from the current date minus one week to the current date minus one day.
+
+3. Filter for Last Two Weeks:
+```sql
+SELECT *
+FROM your_table
+WHERE TO_DATE(datehour, 'YYYYMMDDHH24') BETWEEN current_date - interval '2 weeks' AND current_date - interval '1 day';
+```
+This query filters the `datehour` column within the range from the current date minus two weeks to the current date minus one day.
+
+Replace `your_table` with the actual name of your table containing the `datehour` column. Running these queries will return the rows where the `datehour` value falls within the specified date ranges.
