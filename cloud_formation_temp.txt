@@ -1,0 +1,48 @@
+Resources:
+  MyTopic:
+    Type: 'AWS::SNS::Topic'
+    Properties:
+      TopicName: MyTopic
+  MyTopicSubscription:
+    Type: 'AWS::SNS::Subscription'
+    Properties:
+      Endpoint: email@example.com
+      Protocol: email
+      TopicArn: !Ref MyTopic
+  MyGluePythonShellJob:
+    Type: 'AWS::Glue::Job'
+    Properties:
+      Command: 
+        Name: pythonshell
+        ScriptLocation: s3://your_bucket/your_python_shell_script.py
+      DefaultArguments: 
+        "--job-bookmark-option": "job-bookmark-enable"
+        "--TempDir": "s3://your_bucket/temp_dir/"
+  MyGluePySparkJob:
+    Type: 'AWS::Glue::Job'
+    Properties:
+      Command: 
+        Name: glueetl
+        ScriptLocation: s3://your_bucket/your_pyspark_script.py
+      DefaultArguments: 
+        "--job-bookmark-option": "job-bookmark-enable"
+        "--TempDir": "s3://your_bucket/temp_dir/"
+  MyRedshiftCluster:
+    Type: 'AWS::Redshift::Cluster'
+    Properties:
+      ClusterType: single-node
+      MasterUsername: masteruser
+      MasterUserPassword: masteruserpassword
+      NodeType: ds2.xlarge
+      ClusterSubnetGroupName: !Ref MyClusterSubnetGroup
+  MyClusterSubnetGroup:
+    Type: 'AWS::Redshift::ClusterSubnetGroup'
+    Properties:
+      Description: My cluster subnet group
+      SubnetIds:
+        - subnet-0123456789abcdef0
+  MyStateMachine:
+    Type: 'AWS::StepFunctions::StateMachine'
+    Properties:
+      DefinitionS3Location: s3://your_bucket/your_state_machine_definition.json
+      RoleArn: arn:aws:iam::123456789012:role/service-role/MyRole
