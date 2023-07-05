@@ -1,0 +1,21 @@
+Apologies for the misunderstanding. Here are 10 types of data-specific validation checks you can perform after migration:
+
+1. **Data Accuracy**: Verify that the data transferred matches the original source. Cross-verify a random sample of data between source and destination databases.
+
+2. **Data Completeness**: Confirm that all records have been migrated from the source to the destination system. Check total record counts in both databases.
+
+3. **Data Integrity**: Validate the preservation of relationships among data, such as foreign key constraints in relational databases.
+
+4. **Data Type Consistency**: Check if the data types (text, numeric, date, etc.) in the source and the destination are the same and have been correctly transferred.
+
+5. **Business Rule Validation**: Ensure the migrated data adheres to established business rules like specific format of fields, mandatory fields, data constraints, etc.
+
+6. **Null Value Checks**: Null values can cause issues post-migration. Validate that null values in the data are intentional and won't interfere with further operations.
+
+7. **Range and Limit Checks**: Verify that the values of migrated data fall within the expected ranges or limits. For example, age should be a positive number, date of birth should be a valid date, etc.
+
+8. **Unique and Duplicate Checks**: Make sure unique fields in the source remain unique in the destination and look for unintentional duplicate records.
+
+9. **Data Precision**: In case of numerical data, validate if the precision and scale (number of digits in fractional part) are maintained post-migration.
+
+10. **Historical Data Validation**: If historical data is part of the migration, ensure that this data is accurately and completely transferred and the timelines of data changes have been preserved.
