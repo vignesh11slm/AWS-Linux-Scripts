@@ -1,4 +1,3 @@
-Apologies for the misunderstanding. Here are 10 types of data-specific validation checks you can perform after migration:
 
 1. **Data Accuracy**: Verify that the data transferred matches the original source. Cross-verify a random sample of data between source and destination databases.
 
