@@ -2,10 +2,6 @@
   "AWSTemplateFormatVersion": "2010-09-09",
   "Description": "EventBridge Scheduler with Step Function Trigger",
   "Parameters": {
-    "EventBridgeRuleName": {
-      "Type": "String",
-      "Description": "Name for the EventBridge rule"
-    },
     "CronSchedule": {
       "Type": "String",
       "Description": "Cron schedule for the EventBridge rule (e.g., 'cron(0 0 * * ? *)')"
@@ -17,6 +13,14 @@
     "ConstantInputJson": {
       "Type": "String",
       "Description": "Constant JSON input for the Step Function"
+    },
+    "EventBridgeRuleName": {
+      "Type": "String",
+      "Description": "Name for the EventBridge rule"
+    },
+    "ExecutionRoleArn": {
+      "Type": "String",
+      "Description": "ARN of the IAM role for executing the Step Function"
     },
     "State": {
       "Type": "String",
@@ -45,12 +49,49 @@
           }
         ]
       }
+    },
+    "ExecutionRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": "EventBridgeExecutionRole",
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "events.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "StepFunctionExecutionPolicy",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": "states:StartExecution",
+                  "Resource": { "Fn::Sub": "${StepFunctionArn}" }
+                }
+              ]
+            }
+          }
+        ]
+      }
     }
   },
   "Outputs": {
     "EventBridgeSchedulerARN": {
       "Description": "ARN of the EventBridge Scheduler Rule",
       "Value": { "Fn::GetAtt": ["EventBridgeRule", "Arn"] }
+    },
+    "ExecutionRoleArn": {
+      "Description": "ARN of the IAM role for executing the Step Function",
+      "Value": { "Fn::GetAtt": ["ExecutionRole", "Arn"] }
     }
   }
 }
