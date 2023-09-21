@@ -1,0 +1,56 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "EventBridge Scheduler with Step Function Trigger",
+  "Parameters": {
+    "EventBridgeRuleName": {
+      "Type": "String",
+      "Description": "Name for the EventBridge rule"
+    },
+    "CronSchedule": {
+      "Type": "String",
+      "Description": "Cron schedule for the EventBridge rule (e.g., 'cron(0 0 * * ? *)')"
+    },
+    "StepFunctionArn": {
+      "Type": "String",
+      "Description": "ARN of the Step Function to trigger"
+    },
+    "ConstantInputJson": {
+      "Type": "String",
+      "Description": "Constant JSON input for the Step Function"
+    },
+    "State": {
+      "Type": "String",
+      "Description": "State of the EventBridge rule (e.g., 'ENABLED' or 'DISABLED')",
+      "AllowedValues": ["ENABLED", "DISABLED"]
+    }
+  },
+  "Resources": {
+    "EventBridgeRule": {
+      "Type": "AWS::Events::Rule",
+      "Properties": {
+        "Name": { "Ref": "EventBridgeRuleName" },
+        "Description": "EventBridge Scheduler Rule",
+        "ScheduleExpression": { "Fn::Sub": "${CronSchedule}" },
+        "State": { "Ref": "State" },
+        "Targets": [
+          {
+            "Id": "StepFunctionTarget",
+            "Arn": { "Fn::Sub": "${StepFunctionArn}" },
+            "InputTransformer": {
+              "InputPathsMap": {
+                "constantInput": "$.constantInput"
+              },
+              "InputTemplate": { "Fn::Sub": "{\"inputParam\": ${ConstantInputJson}}" }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "EventBridgeSchedulerARN": {
+      "Description": "ARN of the EventBridge Scheduler Rule",
+      "Value": { "Fn::GetAtt": ["EventBridgeRule", "Arn"] }
+    }
+  }
+}
