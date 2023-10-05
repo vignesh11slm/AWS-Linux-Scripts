@@ -1,0 +1,131 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "AWS CloudFormation Template for creating an AWS Transfer Family server and user.",
+  "Resources": {
+    "TransferServer": {
+      "Type": "AWS::Transfer::Server",
+      "Properties": {
+        "IdentityProviderType": "SERVICE_MANAGED",
+        "LoggingRole": {
+          "Fn::GetAtt": ["TransferServerLoggingRole", "Arn"]
+        }
+      }
+    },
+    "TransferServerLoggingRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "transfer.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "Path": "/",
+        "Policies": [
+          {
+            "PolicyName": "TransferServerLoggingPolicy",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "s3:PutObject",
+                    "s3:GetBucketAcl",
+                    "s3:GetBucketLocation",
+                    "s3:GetObject",
+                    "s3:ListBucket",
+                    "s3:ListBucketMultipartUploads",
+                    "s3:ListMultipartUploadParts"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::GetAtt": ["TransferServerS3Bucket", "Arn"]
+                    },
+                    {
+                      "Fn::Sub": "${TransferServerS3Bucket.Arn}/*"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "TransferServerS3Bucket": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "BucketName": {
+          "Fn::Sub": "transfer-server-bucket-${AWS::StackName}"
+        }
+      }
+    },
+    "TransferUser": {
+      "Type": "AWS::Transfer::User",
+      "Properties": {
+        "ServerId": {
+          "Fn::GetAtt": ["TransferServer", "ServerId"]
+        },
+        "UserName": "sftpuser",
+        "HomeDirectory": "/sftp",
+        "Role": {
+          "Fn::GetAtt": ["TransferUserRole", "Arn"]
+        }
+      }
+    },
+    "TransferUserRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "transfer.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "Path": "/",
+        "Policies": [
+          {
+            "PolicyName": "TransferUserPolicy",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "s3:ListBucket",
+                    "s3:GetObject",
+                    "s3:PutObject",
+                    "s3:DeleteObject",
+                    "s3:ListMultipartUploadParts",
+                    "s3:AbortMultipartUpload"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::GetAtt": ["TransferServerS3Bucket", "Arn"]
+                    },
+                    {
+                      "Fn::Sub": "${TransferServerS3Bucket.Arn}/*"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  }
+}
