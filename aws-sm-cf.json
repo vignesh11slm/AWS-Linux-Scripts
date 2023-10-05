@@ -1,0 +1,53 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "AWS CloudFormation Template for creating a Secrets Manager secret.",
+  "Parameters": {
+    "Username": {
+      "Description": "Username for the secret",
+      "Type": "String"
+    },
+    "Password": {
+      "Description": "Password for the secret",
+      "Type": "String",
+      "NoEcho": true
+    },
+    "RedshiftARN": {
+      "Description": "ARN of the Redshift cluster to attach the secret to",
+      "Type": "String"
+    }
+  },
+  "Resources": {
+    "Secret": {
+      "Type": "AWS::SecretsManager::Secret",
+      "Properties": {
+        "Name": { "Fn::Sub": "MyRedshiftSecret-${AWS::StackName}" },
+        "Description": "Secret for Redshift database",
+        "GenerateSecretString": {
+          "SecretStringTemplate": "{\"username\": {\"Ref\": \"Username\"}, \"password\": {\"Ref\": \"Password\"}}",
+          "GenerateStringKey": "password",
+          "PasswordLength": 16,
+          "ExcludeCharacters": "\"@/\\",
+          "IncludeSpace": false
+        }
+      }
+    },
+    "RedshiftSecretAttachment": {
+      "Type": "AWS::SecretsManager::SecretTargetAttachment",
+      "Properties": {
+        "SecretId": { "Ref": "Secret" },
+        "TargetId": { "Ref": "RedshiftARN" },
+        "TargetType": "AWS::Redshift::Cluster"
+      }
+    }
+  },
+  "Outputs": {
+    "SecretName": {
+      "Description": "The name of the created secret",
+      "Value": { "Ref": "Secret" }
+    },
+    "SecretARN": {
+      "Description": "The ARN of the created secret",
+      "Value": { "Fn::GetAtt": ["Secret", "Arn"] }
+    }
+  }
+}
