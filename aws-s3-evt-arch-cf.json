@@ -1,0 +1,85 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "CloudFormation template to create S3 folders with optional event notifications and archival.",
+  "Parameters": {
+    "BucketName": {
+      "Type": "String",
+      "Description": "Name of the S3 bucket where the folder will be created."
+    },
+    "FolderName": {
+      "Type": "String",
+      "Description": "Name of the folder (virtual \"folder\") to create."
+    },
+    "FolderPath": {
+      "Type": "String",
+      "Description": "Path within the bucket where the folder should be created."
+    },
+    "EnableEventNotification": {
+      "Type": "String",
+      "Description": "Enable event notifications (e.g., 'true' or 'false').",
+      "Default": "false",
+      "AllowedValues": ["true", "false"]
+    },
+    "EnableArchival": {
+      "Type": "String",
+      "Description": "Enable archival for objects in this folder (e.g., 'true' or 'false').",
+      "Default": "false",
+      "AllowedValues": ["true", "false"]
+    }
+  },
+  "Resources": {
+    "S3Folder": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "BucketName": { "Ref": "BucketName" }
+      }
+    },
+    "FolderPathEventNotification": {
+      "Type": "AWS::S3::BucketNotification",
+      "Condition": "EnableEventNotification",
+      "Properties": {
+        "Bucket": { "Ref": "BucketName" },
+        "NotificationConfiguration": {
+          "LambdaConfigurations": [
+            {
+              "Event": "s3:ObjectCreated:*",
+              "Function": { "Fn::GetAtt": ["YourLambdaFunction", "Arn"] }  /* Specify your Lambda function ARN here */
+            }
+          ]
+        }
+      }
+    },
+    "FolderPathArchivalPolicy": {
+      "Type": "AWS::S3::Bucket",
+      "Condition": "EnableArchival",
+      "Properties": {
+        "BucketName": { "Ref": "BucketName" },
+        "LifecycleConfiguration": {
+          "Rules": [
+            {
+              "Id": "FolderPathArchivalRule",
+              "Status": "Enabled",
+              "Prefix": { "Fn::Sub": "${FolderPath}/" },
+              "Transitions": [
+                {
+                  "StorageClass": "GLACIER",
+                  "TransitionInDays": 30
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "FolderCreated": {
+      "Description": "The S3 folder has been created.",
+      "Value": { "Fn::Sub": "s3://${BucketName}/${FolderPath}/${FolderName}" }
+    }
+  },
+  "Conditions": {
+    "EnableEventNotification": { "Fn::Equals": [{ "Ref": "EnableEventNotification" }, "true"] },
+    "EnableArchival": { "Fn::Equals": [{ "Ref": "EnableArchival" }, "true"] }
+  }
+}
