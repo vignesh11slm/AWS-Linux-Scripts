@@ -1,0 +1,43 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Create a security group with inbound rules for a list of IP addresses",
+  "Parameters": {
+    "SecurityGroupName": {
+      "Type": "String",
+      "Description": "Name of the Security Group"
+    },
+    "InboundProtocol": {
+      "Type": "String",
+      "Description": "Protocol for inbound rule (e.g., tcp, udp, icmp)"
+    },
+    "InboundIPRanges": {
+      "Type": "CommaDelimitedList",
+      "Description": "Comma-separated list of IP ranges for inbound rules (CIDR notation)"
+    },
+    "InboundPort": {
+      "Type": "Number",
+      "Description": "Port for inbound rule (e.g., 22 for SSH)"
+    },
+    "InboundComment": {
+      "Type": "String",
+      "Description": "Comment for inbound rule"
+    }
+  },
+  "Resources": {
+    "SecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupName": { "Ref": "SecurityGroupName" },
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": { "Ref": "InboundProtocol" },
+            "FromPort": { "Ref": "InboundPort" },
+            "ToPort": { "Ref": "InboundPort" },
+            "CidrIp": { "Fn::Select": [0, { "Ref": "InboundIPRanges" }] },
+            "Description": { "Ref": "InboundComment" }
+          }
+        ]
+      }
+    }
+  }
+}
