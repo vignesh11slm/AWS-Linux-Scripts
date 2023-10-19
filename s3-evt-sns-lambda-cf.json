@@ -1,0 +1,58 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "S3 Event Notification with SNS or Lambda as the target",
+  "Parameters": {
+    "S3BucketName": {
+      "Type": "String",
+      "Description": "Name of the S3 bucket to set up event notifications for"
+    },
+    "TargetService": {
+      "Type": "String",
+      "Description": "Choose the target service (SNS or Lambda)",
+      "AllowedValues": ["SNS", "Lambda"],
+      "Default": "SNS"
+    },
+    "TargetArn": {
+      "Type": "String",
+      "Description": "ARN of the SNS topic or Lambda function"
+    }
+  },
+  "Resources": {
+    "S3BucketEventNotification": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "BucketName": { "Ref": "S3BucketName" },
+        "NotificationConfiguration": {
+          "LambdaConfigurations": {
+            "Fn::If": [
+              "UseLambda",
+              [
+                {
+                  "Event": "s3:ObjectCreated:*",
+                  "Function": { "Ref": "TargetArn" }
+                }
+              ],
+              { "Fn::Sub": "" }
+            ]
+          },
+          "TopicConfigurations": {
+            "Fn::If": [
+              "UseSNS",
+              [
+                {
+                  "Event": "s3:ObjectCreated:*",
+                  "Topic": { "Ref": "TargetArn" }
+                }
+              ],
+              { "Fn::Sub": "" }
+            ]
+          }
+        }
+      }
+    }
+  },
+  "Conditions": {
+    "UseSNS": { "Fn::Equals": [{ "Ref": "TargetService" }, "SNS"] },
+    "UseLambda": { "Fn::Equals": [{ "Ref": "TargetService" }, "Lambda"] }
+  }
+}
